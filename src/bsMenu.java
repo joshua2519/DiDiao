@@ -122,9 +122,19 @@ public class bsMenu {
 			int capFail=0;
 
 			do{
+				Thread.sleep(Math.round(Math.random()*3000)+1000);
 				//get page info
 				HttpGet httpGet = new HttpGet(bsrURL+targetPage);
-				CloseableHttpResponse initRes = httpclient.execute(httpGet);
+				CloseableHttpResponse initRes;
+				try{
+					 initRes = httpclient.execute(httpGet);
+				}catch(Exception e)
+				{
+					System.out.println(e.getMessage());
+					Thread.sleep(5000);
+					continue;
+				}
+				
 				HttpEntity initResEntity = initRes.getEntity();
 				org.jsoup.nodes.Document  initResDoc = Jsoup.parse(EntityUtils.toString(initResEntity));
 				VIEWSTATE=initResDoc.getElementById("__VIEWSTATE").val();
@@ -136,7 +146,8 @@ public class bsMenu {
 				capFail+=1;
 				try{
 					saveImage(imgURL,imgFolder+imgid+".jpg");
-				}catch(IOException e){
+				}catch(Exception e){
+					System.out.println(e.getMessage());
 					Thread.sleep(5000);
 					continue;
 				}					

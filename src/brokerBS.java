@@ -9,14 +9,12 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -24,7 +22,6 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -32,7 +29,6 @@ import org.jsoup.select.Elements;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
-import org.opencv.core.Point;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
 
@@ -154,6 +150,7 @@ public class brokerBS {
 					try{
 						saveImage(captchaURL,imgFolder+imgid+".jpg");
 					}catch(IOException e){
+						System.out.println(e.getMessage());
 						Thread.sleep(Math.round(Math.random()*500));
 						continue;
 					}					
@@ -173,7 +170,17 @@ public class brokerBS {
 		                    .build();
 				
 				Thread.sleep(Math.round(Math.random()*5000));
-				CloseableHttpResponse queryPostRes = httpclient.execute(queryPost);
+				CloseableHttpResponse queryPostRes;
+				try{
+					queryPostRes = httpclient.execute(queryPost);
+				}
+				catch(Exception e){
+					System.out.println(e.getMessage());
+					Thread.sleep(5000);
+					pass=false;
+					continue;
+				}
+				 
 				HttpEntity queryPostEntity = queryPostRes.getEntity();
 						
 				//System.out.println(EntityUtils.toString(queryPostEntity,"UTF-8"));
