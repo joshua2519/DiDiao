@@ -123,15 +123,15 @@ public class brokerBS {
 			String downloadPage="download_ALLCSV_UTF-8.php";
 			//post data
 			String stk_code =id;
-			
 			String stk_date="";			
 			
+			System.out.println("Start: "+id);
 			CloseableHttpClient httpclient = HttpClients.createDefault();			
 			
 			File outCSVFile=new File(csvFolder+id+".csv");
 			//check file exists or id is empty
 			if(outCSVFile.exists() || id.trim().length()==0){
-				//System.out.println(id.length());
+				System.out.println(id+" is aleady exist!");
 				continue;
 			}
 				
@@ -142,7 +142,8 @@ public class brokerBS {
 				
 				if(!pass)
 				{
-					Thread.sleep(Math.round(Math.random()*5000));
+					System.out.println("Get captcha image!");
+					Thread.sleep(Math.round(Math.random()*10000));
 					Date cal = Calendar.getInstance().getTime();		
 					SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 					String imgid=df.format(cal);
@@ -150,8 +151,8 @@ public class brokerBS {
 					try{
 						saveImage(captchaURL,imgFolder+imgid+".jpg");
 					}catch(IOException e){
-						System.out.println(e.getMessage());
-						Thread.sleep(Math.round(Math.random()*500));
+						System.out.println("Save image erooro"+e.getMessage());
+						Thread.sleep(Math.round(Math.random()*5000));
 						continue;
 					}					
 					auth_num=SolveCaptcha(imgid+".jpg",imgFolder,OutImgFolder);
@@ -160,9 +161,12 @@ public class brokerBS {
 					//System.out.println(imgid+".jpg");
 				    System.out.println(auth_num);
 				}
-			    if(auth_num.length() !=5)
+			    if(auth_num.length() !=5){
+			    	System.out.println("solve captcha fail!");
 					continue;
+			    }
 			    
+				System.out.println("Query post");
 				HttpUriRequest queryPost = RequestBuilder.post()
 		                    .setUri(new URI(bsrURL+targetPage))
 		                    .addParameter("stk_code", stk_code)
@@ -175,7 +179,7 @@ public class brokerBS {
 					queryPostRes = httpclient.execute(queryPost);
 				}
 				catch(Exception e){
-					System.out.println(e.getMessage());
+					System.out.println("Query post error: "+e.getMessage());
 					Thread.sleep(5000);
 					pass=false;
 					continue;
@@ -202,6 +206,7 @@ public class brokerBS {
 						 pass=false;
 					 }
 				}else{
+					System.out.println("Download CSV");
 					pass=true;
 					Element stk_dateEle=queryPostEntityDoc.getElementById("stk_date");
 					stk_date=stk_dateEle.text().replace("年", "").replace("月", "").replace("日", "");
@@ -226,18 +231,24 @@ public class brokerBS {
 			httpclient.close();		
 			
 			Thread.sleep(Math.round(Math.random()*8000));
+			System.out.println("Finished: "+id);
 		}// end of for loop
 	}
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		//驗證圖片儲存位置
-				String  imgFolder="E:/Temp/captcha/";
+				String  imgFolder="C:/Temp/captcha/";
+				//String  imgFolder="E:/Temp/captcha/";
 				//處理後驗證圖片儲存位置
-				String  OutImgFolder="E:/Temp/outs/";
+				String  OutImgFolder="C:/Temp/outs/";
+				//String  OutImgFolder="E:/Temp/outs/";
 				//上市公司列表
-				String listedCompany="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上櫃日報/listcompanyOTC.csv";
+				String listedCompany="C:/Users/Joshua/Google 雲端硬碟/BIGDATA/ZB101上課資料分享區/上櫃日報/listcompanyOTC.csv";
+				//String listedCompany="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上櫃日報/listcompanyOTC.csv";
 				//csv檔儲存位置
-				String csvFolder="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上櫃日報/20150526/";
+				
+				String csvFolder="C:/Users/Joshua/Google 雲端硬碟/BIGDATA/ZB101上課資料分享區/上櫃日報/20150528/";
+				//String csvFolder="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上櫃日報/20150528/";
 				
 				try{
 					bsMenuDownloader(listedCompany,imgFolder,OutImgFolder,csvFolder);
