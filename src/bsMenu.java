@@ -124,7 +124,7 @@ public class bsMenu {
 
 			do{
 				System.out.println("get Captcha image!");
-				Thread.sleep(Math.round(Math.random()*5000)+5000);
+				Thread.sleep(Math.round(Math.random()*10000));
 				//get page info
 				HttpGet httpGet = new HttpGet(bsrURL+targetPage);
 				CloseableHttpResponse initRes;
@@ -150,7 +150,7 @@ public class bsMenu {
 					saveImage(imgURL,imgFolder+imgid+".jpg");
 				}catch(Exception e){
 					System.out.println("Save image error: "+e.getMessage());
-					Thread.sleep(15000);
+					Thread.sleep(30000);
 					initRes.close();
 					continue;
 				}					
@@ -209,7 +209,7 @@ public class bsMenu {
 			httpclient.close();		
 			
 			Thread.sleep(Math.round(Math.random()*3000));
-			System.out.println("Finished"+id);
+			System.out.println("Finished: "+id);
 		}// end of for loop
 	}
 	
@@ -226,8 +226,8 @@ public class bsMenu {
 		String listedCompany="C:/Users/Joshua/Google 雲端硬碟/BIGDATA/ZB101上課資料分享區/上市日報/listcompany.csv";
 		//String listedCompany="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上市日報/listcompany.csv";
 		//csv檔儲存位置
-		String csvFolder="C:/Users/Joshua/Google 雲端硬碟/BIGDATA/ZB101上課資料分享區/上市日報/20150528/";
-		//String csvFolder="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上市日報/20150528/";
+		String csvFolder="C:/Users/Joshua/Google 雲端硬碟/BIGDATA/ZB101上課資料分享區/上市日報/20150529/";
+		//String csvFolder="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上市日報/20150529/";
 		//log file
 		//String logFile="bsdata/log.csv";
 		try{

@@ -151,8 +151,8 @@ public class brokerBS {
 					try{
 						saveImage(captchaURL,imgFolder+imgid+".jpg");
 					}catch(IOException e){
-						System.out.println("Save image erooro"+e.getMessage());
-						Thread.sleep(Math.round(Math.random()*5000));
+						System.out.println("Save image erooro: "+e.getMessage());
+						Thread.sleep(30000);
 						continue;
 					}					
 					auth_num=SolveCaptcha(imgid+".jpg",imgFolder,OutImgFolder);
@@ -247,7 +247,7 @@ public class brokerBS {
 				//String listedCompany="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上櫃日報/listcompanyOTC.csv";
 				//csv檔儲存位置
 				
-				String csvFolder="C:/Users/Joshua/Google 雲端硬碟/BIGDATA/ZB101上課資料分享區/上櫃日報/20150528/";
+				String csvFolder="C:/Users/Joshua/Google 雲端硬碟/BIGDATA/ZB101上課資料分享區/上櫃日報/20150529/";
 				//String csvFolder="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上櫃日報/20150528/";
 				
 				try{
