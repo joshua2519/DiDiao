@@ -1,8 +1,10 @@
 ﻿import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
 import java.util.*;
 
 import org.apache.http.*;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.impl.client.*;
 import org.apache.http.util.*;
@@ -25,7 +27,7 @@ import org.opencv.highgui.*;
  *
  */
 public class bsMenu {	
-	
+	final static int sleeptime=5000;
 	//decode captcha image
 	static String SolveCaptcha(String file,String imgFolder,String OutImgFolder){
 		 int erosion_size = 1;	     
@@ -44,6 +46,9 @@ public class bsMenu {
 	//save image from URL
 	static void saveImage(String imageUrl, String destinationFile) throws IOException {
 		URL url = new URL(imageUrl);
+		//Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy.hinet.net", 80));
+		//URLConnection urlconn=url.openConnection(proxy);
+		//InputStream is = urlconn.getInputStream();
 		InputStream is = url.openStream();
 		OutputStream os = new FileOutputStream(destinationFile);
 
@@ -111,7 +116,11 @@ public class bsMenu {
 			
 			CloseableHttpClient httpclient = HttpClients.createDefault();
 			boolean pass=false;
-			
+			//HttpHost proxy = new HttpHost("proxy.hinet.net", 80, "http");
+			RequestConfig config=null;
+			//config = RequestConfig.custom()
+            //        .setProxy(proxy)
+            //        .build();
 			File outCSVFile=new File(csvFolder+id+".csv");
 			//check file exists or id is empty
 			if(outCSVFile.exists() || id.trim().length()==0){
@@ -124,19 +133,20 @@ public class bsMenu {
 
 			do{
 				System.out.println("get Captcha image!");
-				Thread.sleep(Math.round(Math.random()*10000));
+				Thread.sleep(Math.round(Math.random()*sleeptime)+3000);
 				//get page info
 				HttpGet httpGet = new HttpGet(bsrURL+targetPage);
+				httpGet.setConfig(config);
 				CloseableHttpResponse initRes;
 				try{
 					 initRes = httpclient.execute(httpGet);
 				}catch(Exception e)
 				{
 					System.out.println("get initail page error! "+e.getMessage());
-					Thread.sleep(3000);
+					Thread.sleep(1000);
 					continue;
 				}
-				Thread.sleep(2000);
+				Thread.sleep(1000);
 				HttpEntity initResEntity = initRes.getEntity();
 				org.jsoup.nodes.Document  initResDoc = Jsoup.parse(EntityUtils.toString(initResEntity));
 				VIEWSTATE=initResDoc.getElementById("__VIEWSTATE").val();
@@ -150,16 +160,18 @@ public class bsMenu {
 					saveImage(imgURL,imgFolder+imgid+".jpg");
 				}catch(Exception e){
 					System.out.println("Save image error: "+e.getMessage());
-					Thread.sleep(30000);
+					Thread.sleep(sleeptime);
 					initRes.close();
 					continue;
 				}					
 				CaptchaControl1=SolveCaptcha(imgid+".jpg",imgFolder,OutImgFolder);
 					//System.out.println(imgid+".jpg");
-					//System.out.println(CaptchaControl1);
+					//System.out.println(CaptchaControl1);				
+			  
 				System.out.println("query post!");		
 				HttpUriRequest queryPost = RequestBuilder.post()
 		                    .setUri(new URI(bsrURL+targetPage))
+		                    .setConfig(config)
 		                    .addParameter("__VIEWSTATE", VIEWSTATE)
 		                    .addParameter("__EVENTVALIDATION", EVENTVALIDATION)
 		                    .addParameter("RadioButton_Normal", RadioButton_Normal)
@@ -190,6 +202,7 @@ public class bsMenu {
 					 System.out.println("Download CSV");
 					 pass=true;
 					 HttpGet CSVGet = new HttpGet(bsrURL+downloadPage);
+					 CSVGet.setConfig(config);
 					 Thread.sleep(1000);
 					 CloseableHttpResponse CSVRes = httpclient.execute(CSVGet);
 					 HttpEntity CSVentity = CSVRes.getEntity();
@@ -208,7 +221,7 @@ public class bsMenu {
 			
 			httpclient.close();		
 			
-			Thread.sleep(Math.round(Math.random()*3000));
+			Thread.sleep(Math.round(Math.random()*sleeptime));
 			System.out.println("Finished: "+id);
 		}// end of for loop
 	}
@@ -223,11 +236,11 @@ public class bsMenu {
 		String  OutImgFolder="C:/Temp/outs/";
 		//String  OutImgFolder="E:/Temp/outs/";
 		//上市公司列表
-		String listedCompany="C:/Users/Joshua/Google 雲端硬碟/BIGDATA/ZB101上課資料分享區/上市日報/listcompany.csv";
+		String listedCompany="C:/daily/listcompany.csv";
 		//String listedCompany="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上市日報/listcompany.csv";
 		//csv檔儲存位置
-		String csvFolder="C:/Users/Joshua/Google 雲端硬碟/BIGDATA/ZB101上課資料分享區/上市日報/20150529/";
-		//String csvFolder="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上市日報/20150529/";
+		String csvFolder="C:/daily/raw/20150826/";
+		//String csvFolder="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上市日報/20150623/";
 		//log file
 		//String logFile="bsdata/log.csv";
 		try{

@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -16,6 +19,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -37,6 +42,9 @@ import cn.easyproject.easyocr.ImageType;
 
 
 public class brokerBS {
+	final static int sleeptime=5000;
+
+	
 	static String SolveCaptcha(String file,String imgFolder,String OutImgFolder){
 		 int dilate_size = 3;
 		 int erod_size =1;	
@@ -65,7 +73,10 @@ public class brokerBS {
 	//save image from URL
 	static void saveImage(String imageUrl, String destinationFile) throws IOException {
 		URL url = new URL(imageUrl);
-		InputStream is = url.openStream();
+		Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy.hinet.net", 80));
+		URLConnection urlconn=url.openConnection(proxy);
+		//InputStream is = url.openStream();
+		InputStream is = urlconn.getInputStream();
 		OutputStream os = new FileOutputStream(destinationFile);
 
 		byte[] b = new byte[2048];
@@ -113,7 +124,7 @@ public class brokerBS {
 		listComReade.close();
 		LogWriter logger;
 		//log file output
-		logger = new LogWriter(csvFolder+"log.txt");
+		logger = new LogWriter(csvFolder+"logOTC.txt");
 		boolean pass=false;
 		String auth_num="";
 		for(String id:listCom){
@@ -127,7 +138,11 @@ public class brokerBS {
 			
 			System.out.println("Start: "+id);
 			CloseableHttpClient httpclient = HttpClients.createDefault();			
-			
+			HttpHost proxy = new HttpHost("proxy.hinet.net", 80, "http");
+			RequestConfig config=null;
+			config = RequestConfig.custom()
+                    .setProxy(proxy)
+                    .build();
 			File outCSVFile=new File(csvFolder+id+".csv");
 			//check file exists or id is empty
 			if(outCSVFile.exists() || id.trim().length()==0){
@@ -143,7 +158,7 @@ public class brokerBS {
 				if(!pass)
 				{
 					System.out.println("Get captcha image!");
-					Thread.sleep(Math.round(Math.random()*10000));
+					Thread.sleep(Math.round(Math.random()*sleeptime));
 					Date cal = Calendar.getInstance().getTime();		
 					SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 					String imgid=df.format(cal);
@@ -151,15 +166,16 @@ public class brokerBS {
 					try{
 						saveImage(captchaURL,imgFolder+imgid+".jpg");
 					}catch(IOException e){
-						System.out.println("Save image erooro: "+e.getMessage());
-						Thread.sleep(30000);
+						System.out.println("Save image error: "+e.getMessage());
+						Thread.sleep(5000);
 						continue;
 					}					
 					auth_num=SolveCaptcha(imgid+".jpg",imgFolder,OutImgFolder);
 					
 					//pass=true;
 					//System.out.println(imgid+".jpg");
-				    System.out.println(auth_num);
+				    System.out.println(auth_num);			   
+				    
 				}
 			    if(auth_num.length() !=5){
 			    	System.out.println("solve captcha fail!");
@@ -169,18 +185,19 @@ public class brokerBS {
 				System.out.println("Query post");
 				HttpUriRequest queryPost = RequestBuilder.post()
 		                    .setUri(new URI(bsrURL+targetPage))
+		                    .setConfig(config)
 		                    .addParameter("stk_code", stk_code)
 		                    .addParameter("auth_num", auth_num)
 		                    .build();
 				
-				Thread.sleep(Math.round(Math.random()*5000));
+				Thread.sleep(Math.round(Math.random()*sleeptime));
 				CloseableHttpResponse queryPostRes;
 				try{
 					queryPostRes = httpclient.execute(queryPost);
 				}
 				catch(Exception e){
 					System.out.println("Query post error: "+e.getMessage());
-					Thread.sleep(5000);
+					Thread.sleep(3000);
 					pass=false;
 					continue;
 				}
@@ -213,6 +230,7 @@ public class brokerBS {
 					String getString="?curstk="+stk_code+"&stk_date="+stk_date+"&auth="+auth_num;
 					HttpGet CSVGet = new HttpGet(bsrURL+downloadPage+getString);
 					Thread.sleep(500);
+					CSVGet.setConfig(config);
 					CloseableHttpResponse CSVRes = httpclient.execute(CSVGet);
 					HttpEntity CSVentity = CSVRes.getEntity();
 					//System.out.println(EntityUtils.toString(CSVentity));
@@ -230,7 +248,7 @@ public class brokerBS {
 			
 			httpclient.close();		
 			
-			Thread.sleep(Math.round(Math.random()*8000));
+			Thread.sleep(Math.round(Math.random()*sleeptime));
 			System.out.println("Finished: "+id);
 		}// end of for loop
 	}
@@ -243,11 +261,11 @@ public class brokerBS {
 				String  OutImgFolder="C:/Temp/outs/";
 				//String  OutImgFolder="E:/Temp/outs/";
 				//上市公司列表
-				String listedCompany="C:/Users/Joshua/Google 雲端硬碟/BIGDATA/ZB101上課資料分享區/上櫃日報/listcompanyOTC.csv";
+				String listedCompany="C:/daily/listcompanyOTC.csv";
 				//String listedCompany="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上櫃日報/listcompanyOTC.csv";
 				//csv檔儲存位置
 				
-				String csvFolder="C:/Users/Joshua/Google 雲端硬碟/BIGDATA/ZB101上課資料分享區/上櫃日報/20150529/";
+				String csvFolder="C:/daily/raw/20150826/";
 				//String csvFolder="E:/GoogleDrive/BIGDATA/ZB101上課資料分享區/上櫃日報/20150528/";
 				
 				try{
